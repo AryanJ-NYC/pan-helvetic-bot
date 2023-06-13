@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "resolveJsonModule": true
   },
   "extends": "tsconfig/base.json",
   "include": ["**/*.ts"],
