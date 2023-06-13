@@ -8,10 +8,16 @@
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.32.0",
     "prettier": "^2.5.1",
     "turbo": "latest"
   },
   "packageManager": "pnpm@7.15.0",
-  "name": "phil-bot"
+  "name": "phil-bot",
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
 }

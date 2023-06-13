@@ -1,10 +1,11 @@
 [
+  { "chatId": -1001861273378, "name": "Blockchain Vaud", "url": "https://t.me/+96abb9MxPMoyOWY0" },
+  { "chatId": -1001526348337, "name": "Bitcoin Geneva", "url": "https://t.me/BitcoinGeneva" },
   {
-    "chatId": "-1001833125034",
-    "name": "Blockchain Vaud",
-    "url": "https://t.me/+96abb9MxPMoyOWY0"
+    "chatId": -1001441909976,
+    "name": "Einezwänzg Bitcoin Solothurn",
+    "url": "https://t.me/Einundzwanzig_Seeland"
   },
-  { "name": "Bitcoin Geneva", "url": "https://t.me/BitcoinGeneva" },
-  { "name": "Einezwänzg Bitcoin Solothurn", "url": "https://t.me/Einundzwanzig_Seeland" },
-  { "name": "Bitcoin Lausanne", "url": "https://t.me/BitcoinLausanne" }
+  { "chatId": -1001689259567, "name": "Bitcoin Lausanne", "url": "https://t.me/BitcoinLausanne" },
+  { "chatId": -1001243013253, "name": "Bitcoin Bern" }
 ]

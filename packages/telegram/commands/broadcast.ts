@@ -7,14 +7,17 @@ bot.command('broadcast', async (ctx) => {
     return;
   }
 
-  const linkToBroadcastMessage = `https://t.me/c/${messageToBroadcast.chat.id
-    .toString()
-    .replace('-100', '')}/${messageToBroadcast.message_id}`;
+  const ogChatId = messageToBroadcast.chat.id.toString().replace('-100', '');
+  const linkToBroadcastMessage = `https://t.me/c/${ogChatId}/${messageToBroadcast.message_id}`;
   const message = `New broadcast: ${linkToBroadcastMessage}`;
 
-  for (const room of rooms) {
-    if (room.chatId) {
-      await ctx.telegram.sendMessage(room.chatId, message);
+  if (process.env.VERCEL_ENV === 'production') {
+    for (const room of rooms) {
+      if (room.chatId && room.chatId !== ctx.message.chat.id) {
+        await ctx.telegram.sendMessage(room.chatId, message);
+      }
     }
+  } else {
+    await ctx.telegram.sendMessage(-1001833125034, message);
   }
 });
