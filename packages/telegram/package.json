@@ -1,0 +1,10 @@
+{
+  "name": "telegram",
+  "version": "0.0.0",
+  "dependencies": {
+    "telegraf": "^4.12.0"
+  },
+  "devDependencies": {
+    "tsconfig": "workspace:*"
+  }
+}
