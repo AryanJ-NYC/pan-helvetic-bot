@@ -1,9 +1,9 @@
 import { Composer, Markup, Scenes, session } from 'telegraf';
-import { bot } from '../bot';
-import { MyContext } from '../types';
-import { devConsumerChatId, producerChatId } from '../config';
 import { z } from 'zod';
+import { bot } from '../bot';
+import { devConsumerChatId, producerChatId } from '../config';
 import rooms from '../rooms.json';
+import { MyContext } from '../types';
 
 const stepHandler = new Composer<MyContext>();
 
@@ -60,7 +60,7 @@ const createEvent = new Scenes.WizardScene(
         ctx.scene.session.url = ctx.message.text;
       }
     }
-    const i = await ctx.reply(
+    await ctx.reply(
       'Is your event Bitcoin only? Write /createEvent to start over.',
       Markup.inlineKeyboard([
         Markup.button.callback('Yes', 'yes'),
