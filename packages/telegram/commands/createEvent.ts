@@ -17,40 +17,50 @@ const createEvent = new Scenes.WizardScene(
     if (ctx.message && 'text' in ctx.message) {
       ctx.scene.session.eventName = ctx.message?.text;
     }
-    await ctx.reply('What date is your event?');
+    await ctx.reply('What date is your event? Write /createEvent to start over.');
     return ctx.wizard.next();
   },
   async (ctx) => {
     if (ctx.message && 'text' in ctx.message) {
       ctx.scene.session.date = ctx.message?.text;
     }
-    await ctx.reply('What time is your event?');
+    await ctx.reply('What time is your event? Write /createEvent to start over.');
     return ctx.wizard.next();
   },
   async (ctx) => {
     if (ctx.message && 'text' in ctx.message) {
-      ctx.scene.session.time = ctx.message?.text;
+      if (ctx.message.text === '/createEvent') {
+        return ctx.scene.enter(wizardId);
+      }
+      ctx.scene.session.time = ctx.message.text;
     }
-    await ctx.reply('Where is your event?');
+    await ctx.reply('Where is your event? Write /createEvent to start over.');
     return ctx.wizard.next();
   },
   async (ctx) => {
     if (ctx.message && 'text' in ctx.message) {
+      if (ctx.message.text === '/createEvent') {
+        return ctx.scene.enter(wizardId);
+      }
       ctx.scene.session.location = ctx.message.text;
     }
-    await ctx.reply('Do you have a URL for your event? If so, type it now. If not, type "no"');
+    await ctx.reply(
+      'Do you have a URL for your event? If so, type it now. If not, type "no." Write /createEvent to start over.'
+    );
     return ctx.wizard.next();
   },
   async (ctx) => {
-    if (
-      ctx.message &&
-      'text' in ctx.message &&
-      z.string().url().safeParse(ctx.message.text).success
-    ) {
-      ctx.scene.session.url = ctx.message.text;
+    if (ctx.message && 'text' in ctx.message) {
+      if (ctx.message.text === '/createEvent') {
+        return ctx.scene.enter(wizardId);
+      }
+
+      if (z.string().url().safeParse(ctx.message.text).success) {
+        ctx.scene.session.url = ctx.message.text;
+      }
     }
     const i = await ctx.reply(
-      'Is your event Bitcoin only?',
+      'Is your event Bitcoin only? Write /createEvent to start over.',
       Markup.inlineKeyboard([
         Markup.button.callback('Yes', 'yes'),
         Markup.button.callback('No', 'no'),
@@ -67,12 +77,18 @@ const createEvent = new Scenes.WizardScene(
       ctx.scene.session.bitcoinOnly = true;
     }
 
-    if (ctx.message && 'text' in ctx.message && ctx.message.text[0].toLowerCase() === 'y') {
-      ctx.scene.session.bitcoinOnly = true;
+    if (ctx.message && 'text' in ctx.message) {
+      if (ctx.message.text === '/createEvent') {
+        return ctx.scene.enter(wizardId);
+      }
+
+      if (ctx.message.text[0].toLowerCase() === 'y') {
+        ctx.scene.session.bitcoinOnly = true;
+      }
     }
 
     await ctx.reply(
-      'Do you have a picture for your event? If so, attach it now. If not, type "no"'
+      'Do you have a picture for your event? If so, attach it now. If not, type "no." Write /createEvent to start over.'
     );
     return ctx.wizard.next();
   },
@@ -82,6 +98,11 @@ const createEvent = new Scenes.WizardScene(
         (a, b) => (b.file_size ?? 0) - (a.file_size ?? 0)
       )[0].file_id;
     }
+
+    if (ctx.message && 'text' in ctx.message && ctx.message.text === '/createEvent') {
+      return ctx.scene.enter(wizardId);
+    }
+
     let eventDescription = `
     Event Name: ${ctx.scene.session.eventName}
 Date: ${ctx.scene.session.date}
