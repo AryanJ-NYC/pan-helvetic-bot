@@ -1,4 +1,4 @@
-import { Composer, Scenes, session } from 'telegraf';
+import { Composer, Markup, Scenes, session } from 'telegraf';
 import { bot } from '../bot';
 import { MyContext } from '../types';
 import { devConsumerChatId, devProducerChatId } from '../config';
@@ -37,6 +37,23 @@ const createEvent = new Scenes.WizardScene(
     if (ctx.message && 'text' in ctx.message) {
       ctx.scene.session.location = ctx.message.text;
     }
+    const i = await ctx.reply(
+      'Is your event Bitcoin only?',
+      Markup.inlineKeyboard([
+        Markup.button.callback('Yes', 'yes'),
+        Markup.button.callback('No', 'no'),
+      ])
+    );
+    return ctx.wizard.next();
+  },
+  async (ctx) => {
+    if ('callback_query' in ctx.update && 'data' in ctx.update.callback_query) {
+      if (ctx.update.callback_query.data === 'yes') {
+        ctx.scene.session.bitcoinOnly = true;
+      } else {
+        ctx.scene.session.bitcoinOnly = false;
+      }
+    }
     await ctx.reply(
       'Do you have a picture for your event? If so, attach it now. If not, type "no"'
     );
@@ -48,11 +65,16 @@ const createEvent = new Scenes.WizardScene(
         (a, b) => (b.file_size ?? 0) - (a.file_size ?? 0)
       )[0].file_id;
     }
-    const eventDescription = `
+    let eventDescription = `
     Event Name: ${ctx.scene.session.eventName}
 Date: ${ctx.scene.session.date}
 Time: ${ctx.scene.session.time}
 Location: ${ctx.scene.session.location}`;
+
+    if (ctx.scene.session.bitcoinOnly) {
+      eventDescription += '\n\nThis is a Bitcoin only event.';
+    }
+
     let message_id: number;
     if (ctx.scene.session.photo) {
       const resp = await ctx.telegram.sendPhoto(devProducerChatId, ctx.scene.session.photo, {
@@ -89,10 +111,6 @@ bot.command('createEvent', async (ctx) => {
   return ctx.scene.enter(wizardId);
 });
 
-//  a picture
+// TODO:
+
 //  a hyperlinked URL ("here" and not the long URL to make people join the group)
-//  a date
-//  name of event
-//  time of event
-//  location of event
-//  [nice to have] "Bitcoin only " yes/no
