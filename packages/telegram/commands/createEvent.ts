@@ -49,7 +49,7 @@ const createEvent = new Scenes.WizardScene(
       ctx.scene.session.location = ctx.message.text;
     }
     await ctx.reply(
-      'Do you have a URL for your event? If so, type it now. If not, type "no." Write /createevent to start over.'
+      'Do you have a URL for your event? If so, type it now (include https://). If not, type "no." Write /createevent to start over.'
     );
     return ctx.wizard.next();
   },
