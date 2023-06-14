@@ -1,5 +1,6 @@
 import { bot } from './bot';
 import './commands/broadcast';
+import './commands/createEvent';
 import './commands/generatelist';
 
 export const messageHandler = bot.webhookCallback('/api/webhooks/telegram');
