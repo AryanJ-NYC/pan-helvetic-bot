@@ -23,7 +23,10 @@ const createEvent = new Scenes.WizardScene(
   },
   async (ctx) => {
     if (ctx.message && 'text' in ctx.message) {
-      ctx.scene.session.date = ctx.message?.text;
+      if (ctx.message.text === '/createEvent') {
+        return ctx.scene.enter(wizardId);
+      }
+      ctx.scene.session.date = ctx.message.text;
     }
     await ctx.reply('What time is your event? Write /createEvent to start over.');
     return ctx.wizard.next();
