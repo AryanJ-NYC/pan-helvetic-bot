@@ -2,6 +2,7 @@ import { Composer, Markup, Scenes, session } from 'telegraf';
 import { bot } from '../bot';
 import { MyContext } from '../types';
 import { devConsumerChatId, devProducerChatId } from '../config';
+import { z } from 'zod';
 
 const stepHandler = new Composer<MyContext>();
 
@@ -37,6 +38,17 @@ const createEvent = new Scenes.WizardScene(
     if (ctx.message && 'text' in ctx.message) {
       ctx.scene.session.location = ctx.message.text;
     }
+    await ctx.reply('Do you have a URL for your event? If so, type it now. If not, type "no"');
+    return ctx.wizard.next();
+  },
+  async (ctx) => {
+    if (
+      ctx.message &&
+      'text' in ctx.message &&
+      z.string().url().safeParse(ctx.message.text).success
+    ) {
+      ctx.scene.session.url = ctx.message.text;
+    }
     const i = await ctx.reply(
       'Is your event Bitcoin only?',
       Markup.inlineKeyboard([
@@ -47,13 +59,18 @@ const createEvent = new Scenes.WizardScene(
     return ctx.wizard.next();
   },
   async (ctx) => {
-    if ('callback_query' in ctx.update && 'data' in ctx.update.callback_query) {
-      if (ctx.update.callback_query.data === 'yes') {
-        ctx.scene.session.bitcoinOnly = true;
-      } else {
-        ctx.scene.session.bitcoinOnly = false;
-      }
+    if (
+      'callback_query' in ctx.update &&
+      'data' in ctx.update.callback_query &&
+      ctx.update.callback_query.data === 'yes'
+    ) {
+      ctx.scene.session.bitcoinOnly = true;
     }
+
+    if (ctx.message && 'text' in ctx.message && ctx.message.text[0].toLowerCase() === 'y') {
+      ctx.scene.session.bitcoinOnly = true;
+    }
+
     await ctx.reply(
       'Do you have a picture for your event? If so, attach it now. If not, type "no"'
     );
@@ -75,14 +92,22 @@ Location: ${ctx.scene.session.location}`;
       eventDescription += '\n\nThis is a Bitcoin only event.';
     }
 
+    let parentChatDescription = eventDescription;
+    if (ctx.scene.session.url) {
+      parentChatDescription += `\n\nClick <a href="${ctx.scene.session.url}">here</a> to learn more.`;
+    }
+
     let message_id: number;
     if (ctx.scene.session.photo) {
       const resp = await ctx.telegram.sendPhoto(devProducerChatId, ctx.scene.session.photo, {
-        caption: eventDescription,
+        caption: parentChatDescription,
+        parse_mode: 'HTML',
       });
       message_id = resp.message_id;
     } else {
-      const resp = await ctx.telegram.sendMessage(devProducerChatId, eventDescription);
+      const resp = await ctx.telegram.sendMessage(devProducerChatId, parentChatDescription, {
+        parse_mode: 'HTML',
+      });
       message_id = resp.message_id;
     }
 
@@ -93,9 +118,10 @@ Location: ${ctx.scene.session.location}`;
     if (ctx.scene.session.photo) {
       await ctx.telegram.sendPhoto(devConsumerChatId, ctx.scene.session.photo, {
         caption: message,
+        parse_mode: 'HTML',
       });
     } else {
-      await ctx.telegram.sendMessage(devConsumerChatId, message);
+      await ctx.telegram.sendMessage(devConsumerChatId, message, { parse_mode: 'HTML' });
     }
     return ctx.scene.leave();
   },
@@ -107,10 +133,7 @@ const stage = new Scenes.Stage<MyContext>([createEvent]);
 bot.use(session());
 bot.use(stage.middleware());
 
-bot.command('createEvent', async (ctx) => {
-  return ctx.scene.enter(wizardId);
-});
+bot.command('createEvent', async (ctx) => ctx.scene.enter(wizardId));
 
-// TODO:
-
-//  a hyperlinked URL ("here" and not the long URL to make people join the group)
+// TODO
+// get ready for production
