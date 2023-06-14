@@ -1,8 +1,9 @@
 import { Composer, Markup, Scenes, session } from 'telegraf';
 import { bot } from '../bot';
 import { MyContext } from '../types';
-import { devConsumerChatId, devProducerChatId } from '../config';
+import { devConsumerChatId, producerChatId } from '../config';
 import { z } from 'zod';
+import rooms from '../rooms.json';
 
 const stepHandler = new Composer<MyContext>();
 
@@ -120,29 +121,44 @@ Location: ${ctx.scene.session.location}`;
 
     let message_id: number;
     if (ctx.scene.session.photo) {
-      const resp = await ctx.telegram.sendPhoto(devProducerChatId, ctx.scene.session.photo, {
+      const resp = await ctx.telegram.sendPhoto(producerChatId, ctx.scene.session.photo, {
         caption: parentChatDescription,
         parse_mode: 'HTML',
       });
       message_id = resp.message_id;
     } else {
-      const resp = await ctx.telegram.sendMessage(devProducerChatId, parentChatDescription, {
+      const resp = await ctx.telegram.sendMessage(producerChatId, parentChatDescription, {
         parse_mode: 'HTML',
       });
       message_id = resp.message_id;
     }
 
-    const message = `${eventDescription}\n\nhttps://t.me/c/${devProducerChatId
+    const message = `${eventDescription}\n\nhttps://t.me/c/${producerChatId
       .toString()
       .replace('-100', '')}/${message_id}`;
 
     if (ctx.scene.session.photo) {
-      await ctx.telegram.sendPhoto(devConsumerChatId, ctx.scene.session.photo, {
-        caption: message,
-        parse_mode: 'HTML',
-      });
+      if (process.env.VERCEL_ENV === 'production') {
+        for (const room of rooms) {
+          await ctx.telegram.sendPhoto(room.chatId, ctx.scene.session.photo, {
+            caption: message,
+            parse_mode: 'HTML',
+          });
+        }
+      } else {
+        await ctx.telegram.sendPhoto(devConsumerChatId, ctx.scene.session.photo, {
+          caption: message,
+          parse_mode: 'HTML',
+        });
+      }
     } else {
-      await ctx.telegram.sendMessage(devConsumerChatId, message, { parse_mode: 'HTML' });
+      if (process.env.VERCEL_ENV === 'production') {
+        for (const room of rooms) {
+          await ctx.telegram.sendMessage(room.chatId, message, { parse_mode: 'HTML' });
+        }
+      } else {
+        await ctx.telegram.sendMessage(devConsumerChatId, message, { parse_mode: 'HTML' });
+      }
     }
     return ctx.scene.leave();
   },
@@ -155,6 +171,3 @@ bot.use(session());
 bot.use(stage.middleware());
 
 bot.command('createEvent', async (ctx) => ctx.scene.enter(wizardId));
-
-// TODO
-// get ready for production
