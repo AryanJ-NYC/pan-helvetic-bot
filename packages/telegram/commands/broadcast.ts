@@ -1,4 +1,5 @@
 import { bot } from '../bot';
+import { devConsumerChatId } from '../config';
 import rooms from '../rooms.json';
 
 bot.command('broadcast', async (ctx) => {
@@ -18,6 +19,6 @@ bot.command('broadcast', async (ctx) => {
       }
     }
   } else {
-    await ctx.telegram.sendMessage(-1001833125034, message);
+    await ctx.telegram.sendMessage(devConsumerChatId, message);
   }
 });

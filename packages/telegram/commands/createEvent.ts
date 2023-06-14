@@ -1,6 +1,7 @@
 import { Composer, Scenes, session } from 'telegraf';
 import { bot } from '../bot';
 import { MyContext } from '../types';
+import { devConsumerChatId, devProducerChatId } from '../config';
 
 const stepHandler = new Composer<MyContext>();
 
@@ -52,10 +53,27 @@ const createEvent = new Scenes.WizardScene(
 Date: ${ctx.scene.session.date}
 Time: ${ctx.scene.session.time}
 Location: ${ctx.scene.session.location}`;
+    let message_id: number;
     if (ctx.scene.session.photo) {
-      await ctx.replyWithPhoto(ctx.scene.session.photo, { caption: eventDescription });
+      const resp = await ctx.telegram.sendPhoto(devProducerChatId, ctx.scene.session.photo, {
+        caption: eventDescription,
+      });
+      message_id = resp.message_id;
     } else {
-      await ctx.reply(eventDescription);
+      const resp = await ctx.telegram.sendMessage(devProducerChatId, eventDescription);
+      message_id = resp.message_id;
+    }
+
+    const message = `${eventDescription}\n\nhttps://t.me/c/${devProducerChatId
+      .toString()
+      .replace('-100', '')}/${message_id}`;
+
+    if (ctx.scene.session.photo) {
+      await ctx.telegram.sendPhoto(devConsumerChatId, ctx.scene.session.photo, {
+        caption: message,
+      });
+    } else {
+      await ctx.telegram.sendMessage(devConsumerChatId, message);
     }
     return ctx.scene.leave();
   },
